@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore | Магазин электроники</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">⚡ TechStore</div>
+        <div class="header-actions">
+            <button class="add-product-btn" onclick="toggleAddModal()">+ Добавить товар</button>
+            <button class="wish-btn" onclick="toggleWishlist()">
+                ❤️ (<span id="wishCount">0</span>)
+            </button>
+            <button class="cart-btn" onclick="toggleCart()">
+                🛒 Корзина (<span id="cartCount">0</span>)
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="store-controls">
+            <input type="text" id="searchInput" placeholder="Поиск товара по названию..." oninput="applyFilters()">
+
+            <div class="control-row">
+                <div class="categories-bar" id="categoriesBar">
+                    <button class="cat-btn active" onclick="setCategory('all')">Все</button>
+                    <button class="cat-btn" onclick="setCategory('ноутбуки')">Ноутбуки</button>
+                    <button class="cat-btn" onclick="setCategory('смартфоны')">Смартфоны</button>
+                    <button class="cat-btn" onclick="setCategory('пк')">Компьютеры</button>
+                    <button class="cat-btn" onclick="setCategory('мониторы')">Мониторы</button>
+                    <button class="cat-btn" onclick="setCategory('аксессуары')">Аксессуары</button>
+                </div>
+
+                <select id="sortSelect" onchange="applyFilters()">
+                    <option value="default">Сортировка: По умолчанию</option>
+                    <option value="asc">Сначала дешевле</option>
+                    <option value="desc">Сначала дороже</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="products-grid" id="productsGrid"></div>
+    </main>
+
+    <!-- Окно деталей товара -->
+    <div class="modal" id="detailsModal" onclick="handleBackdropClick(event, 'detailsModal')">
+        <div class="modal-content details-content" id="detailsModalContent"></div>
+    </div>
+
+    <!-- Окно избранного -->
+    <div class="modal" id="wishlistModal" onclick="handleBackdropClick(event, 'wishlistModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Избранные товары ❤️</h2>
+                <button class="icon-btn" onclick="toggleWishlist()">✕</button>
+            </div>
+            <div class="cart-items" id="wishlistItems"></div>
+        </div>
+    </div>
+
+    <!-- Окно корзины -->
+    <div class="modal" id="cartModal" onclick="handleBackdropClick(event, 'cartModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Корзина покупок</h2>
+                <button class="icon-btn" onclick="toggleCart()">✕</button>
+            </div>
+
+            <div class="cart-items" id="cartItems"></div>
+
+            <div class="promo-box">
+                <input type="text" id="promoInput" placeholder="Промокод (OXIDE = -10%)">
+                <button onclick="applyPromo()">Применить</button>
+            </div>
+
+            <div class="cart-footer">
+                <div class="total-row">
+                    <span>Скидка:</span>
+                    <span id="discountValue">0 ₸</span>
+                </div>
+                <div class="total-row main-total">
+                    <span>Итого:</span>
+                    <strong><span id="cartTotal">0</span> ₸</strong>
+                </div>
+                <div class="cart-action-buttons">
+                    <button class="clear-btn" onclick="clearCart()">Очистить</button>
+                    <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Окно добавления товара -->
+    <div class="modal" id="addModal" onclick="handleBackdropClick(event, 'addModal')">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Новый товар</h2>
+                <button class="icon-btn" onclick="toggleAddModal()">✕</button>
+            </div>
+            <form id="addProductForm" onsubmit="handleCreateProduct(event)">
+                <div class="form-group">
+                    <label>Название товара</label>
+                    <input type="text" id="newTitle" required placeholder="Например: Игровой коврик XL">
+                </div>
+                <div class="form-group">
+                    <label>Цена (в тенге)</label>
+                    <input type="number" id="newPrice" required placeholder="Например: 12000">
+                </div>
+                <div class="form-group">
+                    <label>Категория</label>
+                    <select id="newCategory">
+                        <option value="ноутбуки">Ноутбуки</option>
+                        <option value="смартфоны">Смартфоны</option>
+                        <option value="пк">Компьютеры</option>
+                        <option value="мониторы">Мониторы</option>
+                        <option value="аксессуары">Аксессуары</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Метка</label>
+                    <select id="newBadge">
+                        <option value="none">Без метки</option>
+                        <option value="hit">ХИТ</option>
+                        <option value="new">NEW</option>
+                        <option value="sale">SALE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Ссылка на фото (URL)</label>
+                    <input type="url" id="newImg" placeholder="https://..."
+                        value="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&q=80">
+                </div>
+                <button type="submit" class="checkout-btn" style="margin-top: 10px;">Добавить в каталог</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Уведомление</div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
