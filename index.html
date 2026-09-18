@@ -15,7 +15,8 @@
         <div class="header-actions">
             <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()"
                 title="Сменить тему">🌙</button>
-            <button class="add-product-btn" onclick="toggleAddModal()">+ Добавить товар</button>
+            <button class="reset-btn" onclick="resetCatalog()" title="Сбросить каталог">🔄 Сброс</button>
+            <button class="add-product-btn" onclick="toggleAddModal()">+ Товар</button>
             <button class="wish-btn" onclick="toggleWishlist()">
                 ❤️ (<span id="wishCount">0</span>)
             </button>
@@ -57,12 +58,12 @@
         <div class="products-grid" id="productsGrid"></div>
     </main>
 
-    <!-- Окно деталей товара -->
+    <!-- Детали товара -->
     <div class="modal" id="detailsModal" onclick="handleBackdropClick(event, 'detailsModal')">
         <div class="modal-content details-content" id="detailsModalContent"></div>
     </div>
 
-    <!-- Окно избранного -->
+    <!-- Избранное -->
     <div class="modal" id="wishlistModal" onclick="handleBackdropClick(event, 'wishlistModal')">
         <div class="modal-content">
             <div class="modal-header">
@@ -73,7 +74,7 @@
         </div>
     </div>
 
-    <!-- Окно корзины -->
+    <!-- Корзина -->
     <div class="modal" id="cartModal" onclick="handleBackdropClick(event, 'cartModal')">
         <div class="modal-content">
             <div class="modal-header">
@@ -105,7 +106,7 @@
         </div>
     </div>
 
-    <!-- Окно добавления товара -->
+    <!-- Добавление товара -->
     <div class="modal" id="addModal" onclick="handleBackdropClick(event, 'addModal')">
         <div class="modal-content">
             <div class="modal-header">

@@ -148,7 +148,18 @@ function showToast(text) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
-// Тема оформления (Dark / Light)
+// Сброс каталога к стандартному списку
+function resetCatalog() {
+    if (confirm("Сбросить каталог к стандартному списку товаров?")) {
+        localStorage.removeItem("tech_products");
+        products = [...defaultProducts];
+        saveAll();
+        applyFilters();
+        showToast("Каталог сброшен!");
+    }
+}
+
+// Тема оформления
 function initTheme() {
     const savedTheme = localStorage.getItem("tech_theme") || "dark";
     if (savedTheme === "light") {
@@ -227,7 +238,7 @@ function applyFilters() {
     const sortType = sortSelect.value;
 
     let result = products.filter(p => {
-        const matchCat = currentCategory === "all" || p.category === currentCategory;
+        const matchCat = currentCategory === "all" || p.category.toLowerCase() === currentCategory.toLowerCase();
         const matchSearch = p.title.toLowerCase().includes(query);
         const matchPrice = p.price <= maxPriceFilter;
         return matchCat && matchSearch && matchPrice;
@@ -239,7 +250,6 @@ function applyFilters() {
     renderProducts(result);
 }
 
-// Удаление товара из магазина
 function deleteProduct(id) {
     const item = products.find(p => p.id === id);
     if (!item) return;
@@ -295,7 +305,7 @@ function toggleWishlist() {
     wishlistModal.style.display = wishlistModal.style.display === "flex" ? "none" : "flex";
 }
 
-// Модальное окно деталей товара
+// Детали
 function openDetails(id) {
     const p = products.find(item => item.id === id);
     if (!p) return;
@@ -321,7 +331,7 @@ function toggleDetails() {
     detailsModal.style.display = detailsModal.style.display === "flex" ? "none" : "flex";
 }
 
-// Добавление кастомного товара
+// Создание товара
 function handleCreateProduct(e) {
     e.preventDefault();
     const title = document.getElementById("newTitle").value.trim();
