@@ -13,6 +13,8 @@
     <header>
         <div class="logo">⚡ TechStore</div>
         <div class="header-actions">
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()"
+                title="Сменить тему">🌙</button>
             <button class="add-product-btn" onclick="toggleAddModal()">+ Добавить товар</button>
             <button class="wish-btn" onclick="toggleWishlist()">
                 ❤️ (<span id="wishCount">0</span>)
@@ -34,6 +36,7 @@
                     <button class="cat-btn" onclick="setCategory('смартфоны')">Смартфоны</button>
                     <button class="cat-btn" onclick="setCategory('пк')">Компьютеры</button>
                     <button class="cat-btn" onclick="setCategory('мониторы')">Мониторы</button>
+                    <button class="cat-btn" onclick="setCategory('аудио')">Аудио</button>
                     <button class="cat-btn" onclick="setCategory('аксессуары')">Аксессуары</button>
                 </div>
 
@@ -42,6 +45,12 @@
                     <option value="asc">Сначала дешевле</option>
                     <option value="desc">Сначала дороже</option>
                 </select>
+            </div>
+
+            <div class="price-filter-box">
+                <label for="priceRange">Макс. цена: <span id="priceLabel">1 000 000</span> ₸</label>
+                <input type="range" id="priceRange" min="10000" max="1000000" step="10000" value="1000000"
+                    oninput="handlePriceRange(this.value)">
             </div>
         </div>
 
@@ -119,6 +128,7 @@
                         <option value="смартфоны">Смартфоны</option>
                         <option value="пк">Компьютеры</option>
                         <option value="мониторы">Мониторы</option>
+                        <option value="аудио">Аудио</option>
                         <option value="аксессуары">Аксессуары</option>
                     </select>
                 </div>

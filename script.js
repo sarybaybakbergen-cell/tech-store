@@ -57,7 +57,7 @@ const defaultProducts = [
         id: 7,
         title: "Игровые наушники 7.1 Surround",
         price: 28000,
-        category: "аксессуары",
+        category: "аудио",
         badge: "sale",
         desc: "Пространственное позиционирование звука, съемный микрофон и мягкие амбушюры.",
         img: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=500&q=80"
@@ -70,6 +70,42 @@ const defaultProducts = [
         badge: "new",
         desc: "ПК-игры в кармане: удобные стики, сенсорный дисплей и слот под microSD.",
         img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=500&q=80"
+    },
+    {
+        id: 9,
+        title: "Беспроводная колонка Hi-Fi Bass",
+        price: 42000,
+        category: "аудио",
+        badge: "hit",
+        desc: "Защита от воды IP67, до 24 часов работы на одном заряде и глубокий бас.",
+        img: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=500&q=80"
+    },
+    {
+        id: 10,
+        title: "Планшет Pro 11' 256GB Wi-Fi",
+        price: 380000,
+        category: "смартфоны",
+        badge: "new",
+        desc: "Идеален для учебы и творчества: поддержка стилуса, экран 120 Гц и 4 стереодинамика.",
+        img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500&q=80"
+    },
+    {
+        id: 11,
+        title: "Умные часы Sport Titanium",
+        price: 65000,
+        category: "аксессуары",
+        badge: "sale",
+        desc: "Пульсометр, GPS-трекинг тренировок, титановый безель и сапфировое стекло.",
+        img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80"
+    },
+    {
+        id: 12,
+        title: "Изогнутый монитор 34' Ultrawide",
+        price: 240000,
+        category: "мониторы",
+        badge: "hit",
+        desc: "Соотношение сторон 21:9 для максимального погружения в играх и работы с кодом.",
+        img: "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=500&q=80"
     }
 ];
 
@@ -77,6 +113,7 @@ let products = JSON.parse(localStorage.getItem("tech_products")) || defaultProdu
 let cart = JSON.parse(localStorage.getItem("store_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("store_wishlist")) || [];
 let currentCategory = "all";
+let maxPriceFilter = 1000000;
 let discountMultiplier = 1;
 
 // DOM
@@ -96,6 +133,8 @@ const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
 const promoInput = document.getElementById("promoInput");
 const toast = document.getElementById("toast");
+const priceLabel = document.getElementById("priceLabel");
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 
 function saveAll() {
     localStorage.setItem("tech_products", JSON.stringify(products));
@@ -109,11 +148,30 @@ function showToast(text) {
     setTimeout(() => toast.classList.remove("show"), 2000);
 }
 
+// Тема оформления (Dark / Light)
+function initTheme() {
+    const savedTheme = localStorage.getItem("tech_theme") || "dark";
+    if (savedTheme === "light") {
+        document.body.classList.add("light-theme");
+        themeToggleBtn.textContent = "☀️";
+    } else {
+        document.body.classList.remove("light-theme");
+        themeToggleBtn.textContent = "🌙";
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle("light-theme");
+    const isLight = document.body.classList.contains("light-theme");
+    themeToggleBtn.textContent = isLight ? "☀️" : "🌙";
+    localStorage.setItem("tech_theme", isLight ? "light" : "dark");
+}
+
 // Отрисовка каталога
 function renderProducts(items) {
     productsGrid.innerHTML = "";
     if (items.length === 0) {
-        productsGrid.innerHTML = "<p style='color:#94a3b8;'>Товары не найдены</p>";
+        productsGrid.innerHTML = "<p style='color:var(--text-sub);'>Товары не найдены</p>";
         return;
     }
 
@@ -139,7 +197,10 @@ function renderProducts(items) {
         </div>
         <div>
           <div class="product-price">${product.price.toLocaleString("ru-RU")} ₸</div>
-          <button class="add-btn" onclick="addToCart(${product.id})">В корзину</button>
+          <div class="product-bottom-row">
+            <button class="add-btn" onclick="addToCart(${product.id})">В корзину</button>
+            <button class="delete-product-btn" title="Удалить товар" onclick="deleteProduct(${product.id})">🗑</button>
+          </div>
         </div>
       </div>
     `;
@@ -155,6 +216,12 @@ function setCategory(cat) {
     applyFilters();
 }
 
+function handlePriceRange(val) {
+    maxPriceFilter = Number(val);
+    priceLabel.textContent = maxPriceFilter.toLocaleString("ru-RU");
+    applyFilters();
+}
+
 function applyFilters() {
     const query = searchInput.value.toLowerCase().trim();
     const sortType = sortSelect.value;
@@ -162,13 +229,32 @@ function applyFilters() {
     let result = products.filter(p => {
         const matchCat = currentCategory === "all" || p.category === currentCategory;
         const matchSearch = p.title.toLowerCase().includes(query);
-        return matchCat && matchSearch;
+        const matchPrice = p.price <= maxPriceFilter;
+        return matchCat && matchSearch && matchPrice;
     });
 
     if (sortType === "asc") result.sort((a, b) => a.price - b.price);
     if (sortType === "desc") result.sort((a, b) => b.price - a.price);
 
     renderProducts(result);
+}
+
+// Удаление товара из магазина
+function deleteProduct(id) {
+    const item = products.find(p => p.id === id);
+    if (!item) return;
+
+    if (confirm(`Удалить товар "${item.title}" из каталога?`)) {
+        products = products.filter(p => p.id !== id);
+        cart = cart.filter(p => p.id !== id);
+        wishlist = wishlist.filter(itemId => itemId !== id);
+
+        saveAll();
+        applyFilters();
+        updateCartUI();
+        updateWishlistUI();
+        showToast("Товар удален из каталога!");
+    }
 }
 
 // Избранное
@@ -189,7 +275,7 @@ function updateWishlistUI() {
     wishCount.textContent = wishlist.length;
 
     if (wishlist.length === 0) {
-        wishlistItems.innerHTML = "<p style='color:#94a3b8; text-align:center; padding:20px;'>В избранном пусто</p>";
+        wishlistItems.innerHTML = "<p style='color:var(--text-sub); text-align:center; padding:20px;'>В избранном пусто</p>";
         return;
     }
 
@@ -197,8 +283,8 @@ function updateWishlistUI() {
     wishlistItems.innerHTML = likedProducts.map(p => `
     <div class="cart-row">
       <div>
-        <div style="font-size:14px; font-weight:600;">${p.title}</div>
-        <div style="font-size:13px; color:#4ade80;">${p.price.toLocaleString("ru-RU")} ₸</div>
+        <div style="font-size:14px; font-weight:600; color:var(--text-main);">${p.title}</div>
+        <div style="font-size:13px; color:#10b981;">${p.price.toLocaleString("ru-RU")} ₸</div>
       </div>
       <button class="add-btn" style="width:auto; padding:6px 12px; font-size:12px;" onclick="addToCart(${p.id})">В корзину</button>
     </div>
@@ -305,7 +391,7 @@ function updateCartUI() {
     cartCount.textContent = totalCount;
 
     if (cart.length === 0) {
-        cartItems.innerHTML = "<p style='color:#94a3b8; text-align:center; padding: 20px 0;'>Корзина пуста</p>";
+        cartItems.innerHTML = "<p style='color:var(--text-sub); text-align:center; padding: 20px 0;'>Корзина пуста</p>";
         cartTotal.textContent = "0";
         discountValue.textContent = "0 ₸";
         return;
@@ -314,12 +400,12 @@ function updateCartUI() {
     cartItems.innerHTML = cart.map(item => `
     <div class="cart-row">
       <div>
-        <div style="font-size:14px; font-weight:600;">${item.title}</div>
-        <div style="font-size:13px; color:#94a3b8;">${item.price.toLocaleString("ru-RU")} ₸ × ${item.count}</div>
+        <div style="font-size:14px; font-weight:600; color:var(--text-main);">${item.title}</div>
+        <div style="font-size:13px; color:var(--text-sub);">${item.price.toLocaleString("ru-RU")} ₸ × ${item.count}</div>
       </div>
       <div style="display:flex; align-items:center; gap:6px;">
         <button class="qty-btn" onclick="changeCount(${item.id}, -1)">-</button>
-        <span style="min-width:18px; text-align:center;">${item.count}</span>
+        <span style="min-width:18px; text-align:center; color:var(--text-main);">${item.count}</span>
         <button class="qty-btn" onclick="changeCount(${item.id}, 1)">+</button>
       </div>
     </div>
@@ -372,6 +458,7 @@ function checkout() {
 }
 
 // Запуск
+initTheme();
 applyFilters();
 updateCartUI();
 updateWishlistUI();
